@@ -1,0 +1,7 @@
+GET http://localhost:8000/get-message
+User-Agent: IntelliJ HTTP Client/PyCharm 2024.2.0.1
+Accept-Encoding: br, deflate, gzip, x-gzip
+Accept: */*
+content-length: 0
+
+<> 2024-09-02T013700.200.json
