@@ -1,19 +1,8 @@
 # Roadmap.sh Projects
 
-## Todo List API
+## [Todo List API](TodoListAPI/main.py)
 
-### Goals
-
-The skills you will learn from this project include:
-
-* User authentication
-* Schema design and Databases
-* RESTful API design
-* CRUD operations
-* Error handling
-* Security
-
-## Requirements
+### Requirements
 
 You are required to develop a RESTful API with following endpoints:
 
