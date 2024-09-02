@@ -59,7 +59,8 @@ async def login(user: LoginUser):
     cursor.execute("SELECT * FROM users WHERE email = %s", (user.email,))
     result = cursor.fetchone()
 
-    if sha256_crypt.verify(user.password, result['password']):
+    # TODO: email verify got 500 error
+    if user.email == result['email'] and sha256_crypt.verify(user.password, result['password']):
         return {"token": result['token']}
     else:
-        raise HTTPException(status_code=401, detail=f"Invalid email or password {result['password']} {user.email}")
+        raise HTTPException(status_code=401, detail=f"Invalid email or password")
