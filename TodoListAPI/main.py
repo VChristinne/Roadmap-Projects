@@ -1,29 +1,24 @@
 from uuid import uuid4
 from passlib.hash import sha256_crypt
-from mysql import connector
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
+from fastapi import FastAPI, HTTPException, Depends, Header
 
+from config import *
+from models import *
 
-class User(BaseModel):
-    name: str
-    email: str
-    password: str
-
-
-class LoginUser(BaseModel):
-    email: str
-    password: str
-
-
-db = connector.connect(
-    host="localhost",
-    user="root",
-    password="",
-    database="ToDoList"
-)
 
 app = FastAPI()
+
+
+async def get_current_user(authorization: str = Header(...)):
+    token = authorization
+    cursor = db.cursor(dictionary=True)
+    cursor.execute("SELECT * FROM users WHERE token = %s", (token,))
+    user = cursor.fetchone()
+
+    if user is None:
+        raise HTTPException(status_code=401, detail="Invalid or expired token")
+
+    return user
 
 @app.get("/message")
 async def message():
@@ -34,7 +29,10 @@ async def message():
 @app.post("/register")
 async def register(user: User):
     cursor = db.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM users WHERE email = %s", (user.email,))
+    cursor.execute(
+        "SELECT * FROM users WHERE email = %s", 
+        (user.email,)
+    )
     if cursor.fetchone():
         raise HTTPException(status_code=400, detail="Email already in use")
 
@@ -42,9 +40,9 @@ async def register(user: User):
     token = str(uuid4())
     
     cursor = db.cursor()
-    cursor.execute("""
-        INSERT INTO users (name, email, password, token) VALUES (%s, %s, %s, %s)
-        """, (user.name, user.email, hashed, token)
+    cursor.execute(
+        "INSERT INTO users (name, email, password, token) VALUES (%s, %s, %s, %s)", 
+        (user.name, user.email, hashed, token)
     )
     db.commit()
     
@@ -56,10 +54,27 @@ async def register(user: User):
 @app.post("/login")
 async def login(user: LoginUser):
     cursor = db.cursor(dictionary=True)
-    cursor.execute("SELECT * FROM users WHERE email = %s", (user.email,))
+    cursor.execute(
+        "SELECT * FROM users WHERE email = %s", 
+        (user.email,)
+    )
     result = cursor.fetchone()
 
     if result is None or not sha256_crypt.verify(user.password, result['password']):
         raise HTTPException(status_code=401, detail=f"Invalid email or password")
 
     return {"token": result['token']}
+
+@app.post("/todos")
+async def create_task(task: Task, user: dict = Depends(get_current_user)):
+    cursor = db.cursor()
+    cursor.execute(
+        "INSERT INTO Tasks (title, description, id) VALUES (%s, %s, %s)",
+        (task.title, task.description, user['id'])
+    )
+    db.commit()
+    
+    if cursor.rowcount == 1:
+        return {"message": "Task created successfully"}
+    else:
+        raise HTTPException(status_code=500, detail="Error creating task")
