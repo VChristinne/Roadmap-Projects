@@ -67,14 +67,30 @@ async def login(user: LoginUser):
 
 @app.post("/todos")
 async def create_task(task: Task, user: dict = Depends(get_current_user)):
-    cursor = db.cursor()
-    cursor.execute(
-        "INSERT INTO Tasks (title, description, id) VALUES (%s, %s, %s)",
-        (task.title, task.description, user['id'])
-    )
-    db.commit()
+    cursor = db.cursor(dictionary=True)
+    try:
+        cursor.execute(
+            "INSERT INTO Tasks (title, description, user_id) VALUES (%s, %s, %s)",
+            (task.title, task.description, user['id'])
+        )
+        db.commit()
+
+        task_id = cursor.lastrowid
+        cursor.execute("SELECT * FROM Tasks WHERE id = %s", (task_id,))
+        result = cursor.fetchone()
+
+        if result:
+            return {
+                "id": result['id'],
+                "title": result['title'],
+                "description": result['description']
+            }
+        else:
+            raise HTTPException(status_code=500, detail="Task not found after creation")
     
-    if cursor.rowcount == 1:
-        return {"message": "Task created successfully"}
-    else:
-        raise HTTPException(status_code=500, detail="Error creating task")
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    
+    finally:
+        cursor.close()
