@@ -89,7 +89,8 @@ async def login(user: LoginUser):
 
 @app.post("/todos")
 async def create_task(task: Task, user: dict = Depends(get_current_user)):
-    cursor = db.cursor(dictionary=True)
+    cursor = db.cursor(dictionary=True)  
+    
     try:
         cursor.execute(
             "INSERT INTO Tasks (title, description, user_id) VALUES (%s, %s, %s)",
@@ -116,3 +117,44 @@ async def create_task(task: Task, user: dict = Depends(get_current_user)):
     
     finally:
         cursor.close()
+
+
+@app.put("/todos/{task_id}")
+async def update_task(task_id: int, task: Task, user: dict = Depends(get_current_user)):
+    cursor = db.cursor(dictionary=True)
+    
+    try:
+        cursor.execute("SELECT * FROM Tasks WHERE id = %s AND user_id = %s", (task_id, user['id']))
+        existing_task = cursor.fetchone()
+        
+        if not existing_task:
+            raise HTTPException(status_code=403, detail="Forbidden")
+        
+        cursor.execute(
+            "UPDATE Tasks SET title = %s, description = %s WHERE id = %s AND user_id = %s",
+            (task.title, task.description, task_id, user['id'])
+        )
+        db.commit()
+    
+        cursor.execute("SELECT * FROM Tasks WHERE id = %s", (task_id,))
+        result = cursor.fetchone()
+        
+        if not result:
+            raise HTTPException(status_code=500, detail="Task not found for update")
+    
+        return {
+            "id": result['id'],
+            "title": result['title'],
+            "description": result['description']
+        }
+    
+    except HTTPException as e:
+        raise e
+        
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+    finally:
+        cursor.close()
+    
