@@ -157,4 +157,35 @@ async def update_task(task_id: int, task: Task, user: dict = Depends(get_current
 
     finally:
         cursor.close()
-    
+
+
+@app.delete("/todos/{task_id}")
+async def update_task(task_id: int, user: dict = Depends(get_current_user)):
+    cursor = db.cursor(dictionary=True)
+
+    try:
+        cursor.execute("SELECT * FROM Tasks WHERE id = %s AND user_id = %s", (task_id, user['id']))
+        existing_task = cursor.fetchone()
+
+        if not existing_task:
+            raise HTTPException(status_code=403, detail="Forbidden")
+
+        cursor.execute(
+            "DELETE FROM Tasks WHERE id = %s AND user_id = %s",
+            (task_id, user['id'])
+        )
+        db.commit()
+
+        return {
+            HTTPException(status_code=203, detail="Task deleted!")
+        }
+
+    except HTTPException as e:
+        raise e
+
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+    finally:
+        cursor.close()
