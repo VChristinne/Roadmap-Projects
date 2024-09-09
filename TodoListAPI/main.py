@@ -124,7 +124,10 @@ async def update_task(task_id: int, task: Task, user: dict = Depends(get_current
     cursor = db.cursor(dictionary=True)
     
     try:
-        cursor.execute("SELECT * FROM Tasks WHERE id = %s AND user_id = %s", (task_id, user['id']))
+        cursor.execute(
+            "SELECT * FROM Tasks WHERE id = %s AND user_id = %s", 
+            (task_id, user['id'])
+        )
         existing_task = cursor.fetchone()
         
         if not existing_task:
@@ -136,7 +139,7 @@ async def update_task(task_id: int, task: Task, user: dict = Depends(get_current
         )
         db.commit()
     
-        cursor.execute("SELECT * FROM Tasks WHERE id = %s", (task_id,))
+        cursor.execute("SELECT * FROM Tasks WHERE id = %s", task_id)
         result = cursor.fetchone()
         
         if not result:
@@ -164,7 +167,10 @@ async def update_task(task_id: int, user: dict = Depends(get_current_user)):
     cursor = db.cursor(dictionary=True)
 
     try:
-        cursor.execute("SELECT * FROM Tasks WHERE id = %s AND user_id = %s", (task_id, user['id']))
+        cursor.execute(
+            "SELECT * FROM Tasks WHERE id = %s AND user_id = %s", 
+            (task_id, user['id'])
+        )
         existing_task = cursor.fetchone()
 
         if not existing_task:
@@ -185,6 +191,41 @@ async def update_task(task_id: int, user: dict = Depends(get_current_user)):
 
     except Exception as e:
         db.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+
+    finally:
+        cursor.close()
+
+
+@app.get("/todos/")
+async def list_task(page: int = 1, limit: int = 10, user: dict = Depends(get_current_user)):
+    cursor = db.cursor(dictionary=True)
+
+    try:
+        offset = (page - 1) * limit
+        cursor.execute(
+            "SELECT * FROM Tasks WHERE user_id = %s LIMIT %s OFFSET %s",
+            (user['id'], limit, offset)
+        )
+        result = cursor.fetchall()
+
+        if result:
+            return {
+                "data": [
+                    {
+                        "id": task['id'],
+                        "title": task['title'],
+                        "description": task['description'],
+                    } for task in result
+                ],
+                "page": page,
+                "limit": limit,
+                "total": len(result)
+            }
+        else:
+            raise HTTPException(status_code=404, detail="No tasks found")
+
+    except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
     finally:
