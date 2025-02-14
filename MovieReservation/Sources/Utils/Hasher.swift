@@ -9,6 +9,3 @@ struct InputHasher {
         return hashString
     }
 }
-
-let emailHash = InputHasher.hash(input: "user@example.com")
-print(emailHash)
