@@ -25,6 +25,7 @@ struct AdminModel: User {
 }
 
 struct UserPermission: Codable {
+    var editProfile: Bool
     var manageUser: Bool
     var manageMovie: Bool
     var manageShowtime: Bool
