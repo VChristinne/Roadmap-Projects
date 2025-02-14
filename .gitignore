@@ -164,4 +164,5 @@ cython_debug/
 
 TodoListAPI/config.py
 .DS_Store
-*/.build/
+../.build/
+.build/
