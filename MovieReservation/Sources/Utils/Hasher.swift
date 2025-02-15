@@ -1,11 +1,23 @@
-import CryptoKit
+import CommonCrypto
 import Foundation
 
-struct InputHasher {
-    static func hash(input: String) -> String {
-        let inputData = Data(input.utf8)
-        let hashData = SHA256.hash(data: inputData)
-        let hashString = hashData.compactMap { String(format: "%02x", $0) }.joined()
-        return hashString
+extension Data {
+    var hexString: String {
+        return map { String(format: "%02hhx", $0) }.joined()
+    }
+
+    var sha256: Data {
+        var digest = [UInt8](repeating: 0, count: Int(CC_SHA256_DIGEST_LENGTH))
+        self.withUnsafeBytes { buffer in
+            _ = CC_SHA256(buffer.baseAddress, CC_LONG(count), &digest)
+        }
+        return Data(digest)
+    }
+
+}
+
+extension String {
+    func sha256(salt: String) -> Data {
+        return (self + salt).data(using: .utf8)!.sha256
     }
 }

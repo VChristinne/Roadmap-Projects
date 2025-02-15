@@ -1,19 +1,21 @@
 import Foundation
 
 func main() {
-    var client = ClientModel(
+    let client = ClientModel(
         username: "user1",
         email: "user1@example.com",
-        password: PasswordHasher.hash(input: "password123"),
-        permissions: []
+        password: InputHasher.hash(input: "password123"),
+        permissions: [
+            UserPermission(editProfile: true, manageUser: false, manageMovie: false, manageShowtime: false)
+        ]
     )
 
-    var admin = AdminModel(
+    let admin = AdminModel(
         username: "admin1",
         email: "admin1@example.com",
-        password: PasswordHasher.hash(input: "password123"),
+        password: InputHasher.hash(input: "password123"),
         permissions: [
-            UserPermission(manageUser: true, manageMovie: true, manageShowtime: true)
+            UserPermission(editProfile: true, manageUser: true, manageMovie: true, manageShowtime: true)
         ]
     )
 
