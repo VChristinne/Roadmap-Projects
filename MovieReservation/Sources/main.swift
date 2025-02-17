@@ -1,37 +1,49 @@
 import Foundation
 
 func main() {
-    let client = ClientModel(
-        username: "user1",
-        email: "user1@example.com",
-        password: InputHasher.hash(input: "password123"),
-        permissions: [
-            UserPermission(editProfile: true, manageUser: false, manageMovie: false, manageShowtime: false)
-        ]
+    var client = UserModel(
+        username: "client",
+        email: "client@example.com",
+        password: "987654",
+        type: .client,
+        permission: UserPermissionController.shared.getDefaultPermissions(for: .client)
     )
 
-    let admin = AdminModel(
-        username: "admin1",
-        email: "admin1@example.com",
-        password: InputHasher.hash(input: "password123"),
-        permissions: [
-            UserPermission(editProfile: true, manageUser: true, manageMovie: true, manageShowtime: true)
-        ]
+    var admin = UserModel(
+        username: "admin",
+        email: "admin@example.com",
+        password: "123456",
+        type: .admin,
+        permission: UserPermissionController.shared.getDefaultPermissions(for: .admin)
     )
 
-    print("ClientModel:")
+    print("\nClientModel:")
     print("ID: \(client.id)")
     print("Username: \(client.username)")
     print("Email: \(client.email)")
-    print("Password (hashed): \(client.password)")
-    print("Permissions: \(client.permissions)")
+    print("Password (hashed): \(InputHasher.hash(input: client.password))")
+    print("Permissions: \(client.permission)")
+
+    print("--------------------")
 
     print("\nAdminModel:")
     print("ID: \(admin.id)")
     print("Username: \(admin.username)")
     print("Email: \(admin.email)")
-    print("Password (hashed): \(admin.password)")
-    print("Permissions: \(admin.permissions)")
+    print("Password (hashed): \(InputHasher.hash(input: admin.password))")
+    print("Permissions: \(admin.permission)")
+
+    UserPermissionController.shared.updatePermissions(
+        for: &client,
+        with: UserPermission(
+            editProfile: true,
+            manageUser: true,
+            manageMovie: false,
+            manageReservation: true
+        )
+    )
+
+    print("\nUpdated ClientModel: \(client.permission)")
 }
 
 main()

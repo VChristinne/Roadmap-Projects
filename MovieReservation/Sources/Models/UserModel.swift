@@ -1,32 +1,29 @@
 import SwiftUI
 
-protocol User: Identifiable, Codable {
-    var id: UUID { get set }
-    var username: String { get set }
-    var email: String { get set }
-    var password: String { get set }
-    var permissions: [UserPermission] { get set }
-}
-
-struct ClientModel: User {
+struct UserModel: Identifiable, Codable {
     var id = UUID()
     var username: String
     var email: String
     var password: String
-    var permissions: [UserPermission]
+    var type: UserType
+    var permission: UserPermission
 }
 
-struct AdminModel: User {
-    var id = UUID()
-    var username: String
-    var email: String
-    var password: String
-    var permissions: [UserPermission]
+enum UserType: Codable {
+    case client
+    case admin
+}
+
+enum Permission {
+    case editProfile
+    case manageUser
+    case manageMovie
+    case manageReservation
 }
 
 struct UserPermission: Codable {
     var editProfile: Bool
     var manageUser: Bool
     var manageMovie: Bool
-    var manageShowtime: Bool
+    var manageReservation: Bool
 }
