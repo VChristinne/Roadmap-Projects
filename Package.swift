@@ -19,7 +19,7 @@ let package = Package(
             dependencies: [],
             path: "MovieReservation/Sources",
             exclude: [],
-            sources: ["Models", "Utils", "main.swift"]
+            sources: ["Models", "Controllers", "Utils", "main.swift"]
         )
     ]
 )
