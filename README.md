@@ -30,6 +30,6 @@ Build a simple command line interface (CLI) to fetch the recent activity of a Gi
 * Display the fetched activity in the terminal.
 * Handle errors gracefully, such as invalid usernames or API failures.
 
-** Project Page**: https://roadmap.sh/projects/github-user-activity
+**Project Page**: https://roadmap.sh/projects/github-user-activity
 
-**[My submission](https://roadmap.sh/projects/github-user-activity/solutions?u=655494c468ca602613326698)
+**[My submission](https://roadmap.sh/projects/github-user-activity/solutions?u=655494c468ca602613326698)**
