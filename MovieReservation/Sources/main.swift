@@ -1,49 +1,80 @@
 import Foundation
 
 func main() {
-    var client = UserModel(
-        username: "client",
-        email: "client@example.com",
-        password: "987654",
-        type: .client,
-        permission: UserPermissionController.shared.getDefaultPermissions(for: .client)
-    )
+    while true {
+        menu()
+        let option = readLine() ?? ""
 
-    var admin = UserModel(
-        username: "admin",
-        email: "admin@example.com",
-        password: "123456",
-        type: .admin,
-        permission: UserPermissionController.shared.getDefaultPermissions(for: .admin)
-    )
+        switch option {
+        case "1":
+            register()
+        case "2":
+            login()
+        case "3":
+            print("Goodbye!")
+            return
+        default:
+            print("Invalid option")
+        }
+    }
+}
 
-    print("\nClientModel:")
-    print("ID: \(client.id)")
-    print("Username: \(client.username)")
-    print("Email: \(client.email)")
-    print("Password (hashed): \(InputHasher.hash(input: client.password))")
-    print("Permissions: \(client.permission)")
+func menu() {
+    print("\n=== Movie Reservation System ===")
+    print("1 - Register")
+    print("2 - Login")
+    print("3 - Exit")
+    print("Choose an option: ")
+}
 
-    print("--------------------")
+func register() {
+    print("\n=== Register ===")
+    print("Enter your username: ")
+    let username = readLine() ?? ""
+    print("Enter your email: ")
+    let email = readLine() ?? ""
+    print("Enter your password: ")
+    let password = readLine() ?? ""
+    print("Enter your type (1 for Client, 2 for Admin): ")
+    let typeInput = readLine() ?? ""
 
-    print("\nAdminModel:")
-    print("ID: \(admin.id)")
-    print("Username: \(admin.username)")
-    print("Email: \(admin.email)")
-    print("Password (hashed): \(InputHasher.hash(input: admin.password))")
-    print("Permissions: \(admin.permission)")
+    let userType: UserType
+    switch typeInput {
+    case "1":
+        userType = .client
+    case "2":
+        userType = .admin
+    default:
+        print("Invalid user type. Defaulting to client.")
+        userType = .client
+    }
 
-    UserPermissionController.shared.updatePermissions(
-        for: &client,
-        with: UserPermission(
-            editProfile: true,
-            manageUser: true,
-            manageMovie: false,
-            manageReservation: true
-        )
-    )
+    if let user = RegisterUserController.shared.registerUser(
+        username: username,
+        email: email,
+        password: password,
+        type: userType
+    ) {
+        print("\nRegistration successful!")
+        print("Welcome, \(user.username)!")
+    } else {
+        print("\nRegistration failed. Email might already be in use.")
+    }
+}
 
-    print("\nUpdated ClientModel: \(client.permission)")
+func login() {
+    print("\n=== Login ===")
+    print("Enter your email: ")
+    let email = readLine() ?? ""
+    print("Enter your password: ")
+    let password = readLine() ?? ""
+
+    if let user = RegisterUserController.shared.loginUser(email: email, password: password) {
+        print("\nLogin successful!")
+        print("Welcome back, \(user.username)!")
+    } else {
+        print("\nLogin failed. Invalid email or password.")
+    }
 }
 
 main()

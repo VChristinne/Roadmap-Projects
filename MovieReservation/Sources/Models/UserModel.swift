@@ -5,6 +5,7 @@ struct UserModel: Identifiable, Codable {
     var username: String
     var email: String
     var password: String
+    let salt: String
     var type: UserType
     var permission: UserPermission
 }
